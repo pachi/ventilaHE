@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <title>Cálculo de ventilación en viviendas para DB-HE</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.9.3/lodash.min.js"></script>
+    <link href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>Ventilación global de edificios de vivienda (DB-HE)</h1>
+
+    <p>Cálculo del nivel de ventilación global (excluidas infiltraciones) para uso en la modelización energética.</p>
+
+    <table class="table table-bordered" id="results">
+      <thead>
+        <tr>
+          <th>RESULTADOS</th>
+          <th class="text-center" colspan="4">DB-HS 2009</th>
+          <th class="text-center" colspan="4">DB-HS 2015 (propuesta)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ventilación del edificio para cálculos energéticos (DB-HE)</td>
+          <td id="vol2009">245</td><td>l/s</td><td id="renh2009">0.42</td><td>ren/h</td>
+          <td id="vol2015">245</td><td>l/s</td><td id="renh2015">0.42</td><td>ren/h</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="panel panel-primary collapse in">
+      <div class="panel-heading">Definición de tipos de vivienda en el edificio</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <div class="col-xs-6">
+              <input id="voledif" name="voledif" type="float" size="5" value="2133" readonly="readonly">
+              <label for="voledif">Volumen habitable del edificio <span class="units">(m³)</span></label>
+            </div>
+          </div>
+        </div>
+        <br />
+
+        <div class="panel panel-default" id="dataentry">
+          <div class="panel-heading" role="tab" id="headingOne">
+            <h4 class="panel-title">
+              <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                Entrada de datos <span class="caret"></span>
+              </a>
+            </h4>
+          </div>
+
+          <div class="panel-body bg-info" id="collapseOne">
+            <form class="form" action="javascript:void(0);" method="post" id="entryform">
+              <!--  -->
+              <div class="form-group col-xs-12">
+                <div class="col-xs-3">
+                  <input id="numtipo" name="numtipo" type="float" size="3" value="1">
+                  <label for="numtipo">Cantidad de viviendas</label>
+                </div>
+                <div class="col-xs-3">
+                  <input id="nombretipo" name="nombretipo" type="text" size="8" value="-">
+                  <label for="nombretipo">Nombre</label>
+                </div>
+                <div class="col-xs-3">
+                  <input id="suptipo" name="suptipo" type="float" size="5" value="75">
+                  <label for="suptipo">Sup. útil <span class="units">(m²)</span></label>
+                </div>
+                <div class="col-xs-3">
+                  <input id="altura" name="altura" type="float" size="5" value="2.7">
+                  <label for="suptipo">Altura libre <span class="units">(m)</span></label>
+                </div>
+              </div>
+              <!--  -->
+              <div class="form-group col-xs-5 col-xs-offset-1">
+                <div>
+                  <input id="supcomun" name="supcomun" type="float" size="5" value="0">
+                  <label for="supcomun">Zonas comunes asociadas <span class="units">(m²)</span></label>
+                </div>
+                <div>
+                  <input id="numdormitorios" name="numdormitorios" type="float" size="5" value="2">
+                  <label for="numdormitorios">Dormitorios <span class="units">(número)</span></label>
+                </div>
+                <div>
+                  <input id="numestar" name="numestar" type="float" size="5" value="1">
+                  <label for="numestar">Salas de estar, comedores, etc <span class="units">(número)</span></label>
+                </div>
+              </div>
+              <!--  -->
+              <div class="form-group col-xs-6">
+                <div>
+                  <input id="numlochum" name="numlochum" type="float" size="5" value="2">
+                  <label for="numlochum">Locales húmedos <span class="units">(número)</span></label>
+                </div>
+                <div>
+                  <input id="numbanos" name="numbanos" type="float" size="5" value="1">
+                  <label for="numbanos">Baños y aseos <span class="units">(número)</span></label>
+                </div>
+                <div>
+                  <input id="supcocina" name="supcocina" type="float" size="5" value="6">
+                  <label for="supcocina">Superficie de la cocina <span class="units">(m²)</span></label>
+                </div>
+              </div>
+            </form>
+            <!-- Botonera -->
+            <div class="col-xs-12">
+              <div class="btn-group pull-right btn-group-xs" role="group" aria-label="acciones">
+                <button class="btn" id="add"><span class="glyphicon glyphicon-plus"></span> Añadir</button>
+                <button class="btn" id="remove"><span class="glyphicon glyphicon-minus"></span> Borrar</button>
+                <button class="btn" id="modify"><span class="glyphicon glyphicon-refresh"></span> Modificar</button>
+                <button class="btn" id="clean"><span class="glyphicon glyphicon-trash"></span> Limpiar</button>
+              </div>
+            </div>
+          </div>
+
+          <table class="table table-bordered table-striped table-condensed" id="locales">
+            <thead>
+              <tr><th>Tipo</th><th>Cantidad</th><th>Superficie</th><th>Altura</th><th>Z. comunes</th><th>Dormitorios</th><th>S. estar</th><th>Loc. húmedos</th><th>Aseos/baños</th><th>Cocinas</th></tr>
+            </thead>
+            <tbody>
+              <tr class="active"><td>A1</td><td>4</td><td class="m2">55</td><td class="m">2.7</td><td class="m2">5</td><td>1</td><td>1</td><td>2</td><td>1</td><td class="m2">6</td></tr>
+              <tr><td>A2</td><td>1</td><td class="m2">75</td><td class="m">2.7</td><td class="m2">0</td><td>2</td><td>1</td><td>2</td><td>1</td><td class="m2">6</td></tr>
+              <tr><td>A3</td><td>1</td><td class="m2">75</td><td class="m">2.7</td><td class="m2">0</td><td>2</td><td>1</td><td>3</td><td>2</td><td class="m2">6</td></tr>
+              <tr><td>B1</td><td>1</td><td class="m2">100</td><td class="m">2.7</td><td class="m2">0</td><td>3</td><td>1</td><td>3</td><td>2</td><td class="m2">6</td></tr>
+              <tr><td>B2</td><td>1</td><td class="m2">100</td><td class="m">2.7</td><td class="m2">0</td><td>4</td><td>1</td><td>3</td><td>2</td><td class="m2">6</td></tr>
+              <tr><td>B3</td><td>1</td><td class="m2">100</td><td class="m">2.7</td><td class="m2">0</td><td>5</td><td>1</td><td>4</td><td>3</td><td class="m2">6</td></tr>
+              <tr><td>C</td><td>1</td><td class="m2">100</td><td class="m">2.7</td><td class="m2">0</td><td>5</td><td>1</td><td>4</td><td>3</td><td class="m2">6</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>TOTALES</td><td id="totnumtipo">-</td><td id="totsuptipo" class="m2">55</td><td id="totaltura" class="m">2.7</td><td id="totsupcomun" class="m2">20</td><td id="totnumdormitorios">1</td><td id="totnumestar">1</td><td id="totnumlochum">2</td><td id="totnumbanos">1</td><td id="totsupcocina" class="m2">6</td></tr>
+            </tfoot>
+          </table>
+        </div> <!-- Panel-default -->
+
+      </div> <!-- Panel-primary panel-body -->
+    </div> <!-- Panel-primary -->
+  </div> <!-- container -->
+  <script src="ventila.js"></script>
+</body>
