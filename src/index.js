@@ -1,2 +1,0 @@
-import js from './ventila';
-
