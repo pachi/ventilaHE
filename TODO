@@ -1,2 +1,1 @@
-- Acabar de migrar a webpack 4
-- Migrar a [P]React con un archivo index.js y convertir html actual a componentes
+- Convierte a Vite

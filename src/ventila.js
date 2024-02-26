@@ -17,42 +17,37 @@
 
 // Suma vectorial
 function sum_vec(vec1, vec2) {
-  return _.map(_.zip(vec1, vec2), function (p) {
-    return parseFloat(p[0]) + parseFloat(p[1]);
-  });
+  return vec1.map((val, idx) => parseFloat(val) + parseFloat(vec2[idx]));
 }
 
 // Producto (Hadamard), o elemento a elemento, de dos vectores. hadamard([1, 2], [3, 4]) -> [3, 8]
 function hadamard(vec1, vec2) {
-  return _.map(_.zip(vec1, vec2), function (p) {
-    return parseFloat(p[0]) * parseFloat(p[1]);
-  });
+  return vec1.map((val, idx) => parseFloat(val) * parseFloat(vec2[idx]));
 }
 
 // Producto vectorial
 function dot(vec1, vec2) {
-  return _.sum(hadamard(vec1, vec2));
+  return hadamard(vec1, vec2).reduce((acc, val) => acc + val,  0);
 }
 
 // Funciones principales -------------------------------------------------------
-
-const form_fields = [
-  "nombretipo",
-  "numtipo",
-  "suptipo",
-  "altura",
-  "supcomun",
-  "numdormitorios",
-  "numestar",
-  "numlochum",
-  "numbanos",
-  "supcocina",
+const FORM_FIELDS = [
+  { id: 'nombretipo', className: '' },
+  { id: 'numtipo', className: '' },
+  { id: 'suptipo', className: 'm2' },
+  { id: 'altura', className: 'm' },
+  { id: 'supcomun', className: 'm2' },
+  { id: 'numdormitorios', className: '' },
+  { id: 'numestar', className: '' },
+  { id: 'numlochum', className: '' },
+  { id: 'numbanos', className: '' },
+  { id: 'supcocina', className: 'm2' },
 ];
 
 // Limpia entradas del formulario con valores por defecto
-export function resetform_fields() {
-  form_fields.map((e) => {
-    const elem = document.getElementById(e);
+export function reset_form_fields() {
+  FORM_FIELDS.map((e) => {
+    const elem = document.getElementById(e.id);
     const reset_value = elem.getAttribute("type") === "text" ? "-" : 0;
     elem.value = reset_value;
   });
@@ -61,216 +56,203 @@ export function resetform_fields() {
 // Traslada valores del formulario a fila de la tabla de tipos
 export function fields2row() {
   const m = Object.fromEntries(
-    form_fields.map((e) => [e, document.getElementById(e).value])
+    FORM_FIELDS.map((e) => [e.id, document.getElementById(e.id).value])
   );
 
-  // Prueba para sustituir template
-  const res = `<tr>
-  <td>${m.nombretipo}</td>
-  <td>${m.numtipo}</td>
-  <td class="m2">${m.suptipo}</td>
-  <td class="m">${m.altura}</td>
-  <td class="m2">${m.supcomun}</td>
-  <td>${m.numdormitorios}</td>
-  <td>${m.numestar}</td>
-  <td>${m.numlochum}</td>
-  <td>${m.numbanos}</td>
-  <td class="m2">${m.supcocina}</td>
-</tr>`;
-  return res;
+  // Create the table row element
+  const tr = document.createElement('tr');
+
+  FORM_FIELDS.forEach(({id, className}) => {
+    const td = document.createElement('td');
+    if (className) {
+      td.className = className;
+    }
+    td.textContent = m[id];
+    tr.appendChild(td);
+  })
+
+  return tr;
 }
 
 // Convierte fila de datos a objeto
 export function row2data(row) {
-  console.log("row", row);
+  return [...row.cells].reduce((acc, cell, index) => {
+    const id = FORM_FIELDS[index].id;
+    let val = cell.textContent;
+    const isTextField = document.getElementById(id).getAttribute("type") === "text";
+    val = isTextField ? val : parseFloat(val);
+    acc[id] = val;
+    return acc;
+  }, {});
+}
 
-  // const res = {};
-  // for (const [i, cell] of row.cells.entries()) {
-  //     console.log(form_fields[i], cell)
-  // }
-
-  //TODO: A ver si conseguimos eliminar esto
-  return _.reduce(
-    $(row).find("td"),
-    function (accum, value, index) {
-      var field = form_fields[index];
-      var val = $(value).text();
-      var istextfield = $("#" + field).attr("type") === "text" ? true : false;
-      val = istextfield ? val : parseFloat(val);
-      accum[field] = val;
-      return accum;
-    },
-    {}
-  );
+// Actualiza elementos de la interfaz usando sus IDs
+function updateElements(id2ValueMap) {
+  for (const id in id2ValueMap) {
+    if (id2ValueMap.hasOwnProperty(id)) {
+      const element = document.getElementById(id);
+      if (element) {
+        // Check if the element is an input or other elements that use value
+        if (element.tagName === 'INPUT' || element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') {
+          element.value = id2ValueMap[id];
+        } else {
+          // For other elements like div, span, etc., use textContent
+          element.textContent = id2ValueMap[id];
+        }
+      }
+    }
+  }
 }
 
 // Actualiza totales en la tabla
 export function update() {
-  // const data_tbody = document.querySelector("#locales tbody");
-  // const data_rows = data_tbody.querySelectorAll("tr");
-  // const data_new = [...data_rows].map((row) => {
-  //   console.log("data_row", row);
-  //   row2data(row);
-  // });
-
   const rows = document.querySelectorAll("#locales tbody tr");
   const data = Array.from(rows).map(row2data)
 
-  const anumtipos = data.map((i) => i.numtipo);
+  const numtipos_lst = data.map((i) => i.numtipo);
 
-  const asuptipos = hadamard(
-    anumtipos,
-    data.map((i) => i.suptipo)
-  );
-  const asupcomun = hadamard(
-    anumtipos,
-    data.map((i) => supcomun)
-  );
+  const suptipos_lst = hadamard(numtipos_lst, data.map((i) => i.suptipo));
+  const supcomun_lst = hadamard(numtipos_lst, data.map((i) => i.supcomun));
+  
+  const voledif = dot(sum_vec(suptipos_lst, supcomun_lst), data.map((i) => i.altura));
+  const suptipos = suptipos_lst.reduce((acc, val) => acc+val, 0);
+  const supcomunes = supcomun_lst.reduce((acc, val) => acc+val, 0);
+  const totsup = suptipos + supcomunes
+  const vol2009 = ventila2009(data);
+  const vol2015 = ventila2015(data);
+  
+  const values = {
+    voledif,
+    totnumtipo: numtipos_lst.reduce((acc, val) => acc + val, 0),
+    totsuptipo: Math.round(suptipos * 100) / 100,
+    totaltura: totsup ? Math.round(100 * voledif / totsup) / 100 : 0,
+    totsupcomun: Math.round(supcomunes * 100) / 100,
+    totnumdormitorios: dot(numtipos_lst, data.map((i) => i.numdormitorios)),
+    totnumestar: dot(numtipos_lst, data.map((i) => i.numestar)),
+    totnumlochum: dot(numtipos_lst, data.map((i) => i.numlochum)),
+    totnumbanos: dot(numtipos_lst, data.map((i) => i.numbanos)),
+    totsupcocina: Math.round(dot(numtipos_lst, data.map((i) => i.supcocina)) * 100) / 10,
+    vol2009: Math.round(vol2009),
+    renh2009: voledif ? Math.round(100 * (3.6 * vol2009) / voledif) / 100: "-",
+    vol2015: Math.round(vol2015),
+    renh2015: voledif ? Math.round(100 * (3.6 * vol2015) / voledif) / 100: "-",
+  }
 
-  const numdormitorios = dot(
-    anumtipos,
-    data.map((i) => numdormitorios)
-  );
-  const numestar = dot(
-    anumtipos,
-    data.map((i) => numestar)
-  );
-  const numlochum = dot(
-    anumtipos,
-    data.map((i) => numlochum)
-  );
-  const numbanos = dot(
-    anumtipos,
-    data.map((i) => numbanos)
-  );
-  const supcocina = dot(
-    anumtipos,
-    data.map((i) => supcocina)
-  );
-
-  const suptipos = asuptipos.reduce((acc, val) => acc+val, 0);
-  const supcomunes = asupcomun.reduce((acc, val) => acc+val, 0);
-  let altmedia =
-    dot(
-      sum_vec(asuptipos, asupcomun),
-      data.map((i) => altura)
-    ) /
-    (suptipos + supcomunes);
-  altmedia = isNaN(altmedia) ? 0 : altmedia;
-  const voledif = altmedia * (suptipos + supcomunes);
-
-  document.querySelector("#voledif").value = voledif;
-  document.querySelector("#totnumtipo").textContent = anumtipos.reduce(
-    (acc, val) => acc + val,
-    0
-  );
-  document.querySelector("#totsuptipo").textContent =
-    Math.round(suptipos * 100) / 100;
-  document.querySelector("#totaltura").textContent =
-    Math.round(altmedia * 100) / 100;
-  document.querySelector("#totsupcomun").textContent =
-    Math.round(supcomunes * 100) / 100;
-  document.querySelector("#totnumdormitorios").textContent = numdormitorios;
-  document.querySelector("#totnumestar").textContent = numestar;
-  document.querySelector("#totnumlochum").textContent = numlochum;
-  document.querySelector("#totnumbanos").textContent = numbanos;
-  document.querySelector("#totsupcocina").textContent =
-    Math.round(supcocina * 100) / 100;
-
-  let vol2009 = ventila2009(data);
-  let renh2009 = (3.6 * vol2009) / voledif;
-  renh2009 = isNaN(renh2009) ? "-" : Math.round(renh2009 * 100) / 100;
-  $("#vol2009").text(Math.round(vol2009));
-  $("#renh2009").text(renh2009);
-
-  let vol2015 = ventila2015(data);
-  let renh2015 = (3.6 * vol2015) / voledif;
-  renh2015 = isNaN(renh2015) ? "-" : Math.round(renh2015 * 100) / 100;
-  $("#vol2015").text(Math.round(vol2015));
-  $("#renh2015").text(renh2015);
+  updateElements(values);
 }
 
+// Calcula suma de caudales para HS3-2009, l/s
 function ventila2009(data) {
-  function procesatipo2009(row) {
+  function procesa_tipo_2009(row) {
     return (
       row.numtipo *
       (Math.max(
         3 * row.numestar + 5 * Math.min(1 + row.numdormitorios, 4), // admisión
-        15 * row.numbanos + 2 * row.supcocina
-      ) + // extracción
+        15 * row.numbanos + 2 * row.supcocina // extracción
+      ) +
         0.35 * row.supcomun)
     );
   }
-  return data.map(procesatipo2009).reduce((acc, val)=> acc + val, 0); // l/s
+  return data.map(procesa_tipo_2009).reduce((acc, val)=> acc + val, 0); // l/s
 }
 
+// Calcula suma de caudales para HS3 revisado, l/s
 function ventila2015(data) {
-  function procesatipo2015(row) {
+  function procesa_tipo_2015(row) {
     const vol1 =
       8 +
       4 * Math.max(row.numdormitorios - 1, 0) +
       row.numestar * Math.min(4 + 2 * row.numdormitorios, 10);
     const vol2 = Math.min(12 * row.numdormitorios, 33);
     const vol3 = row.numlochum * Math.min(5 + row.numdormitorios, 8);
-    const volminextr = Math.max(vol2, vol3);
-    const volminextrloc = Math.max(vol1, volminextr);
-    return row.numtipo * (volminextrloc + 0.35 * row.supcomun);
+    const vol_min_extr = Math.max(vol2, vol3);
+    const vol_min_extr_loc = Math.max(vol1, vol_min_extr);
+    return row.numtipo * (vol_min_extr_loc + 0.35 * row.supcomun);
   }
-  return data.map(procesatipo2015).reduce((acc, val)=> acc + val, 0); // l/s
+  return data.map(procesa_tipo_2015).reduce((acc, val)=> acc + val, 0); // l/s
 }
 
 // Eventos de la interfaz -------------------------------------------------------
 
-// Seleccionar fila al pulsar
-// "on" actúa sobre elementos actuales o futuros (click, no)
-document.querySelector("#locales > tbody > tr").addEventListener(
-  "click",
-  // Establece fila activa y traslada valores al formulario
-  (e) => {
-    document
-      .querySelector("#locales > tbody > tr.active")
-      .classList.remove("active");
-    e.target.classList.add("active");
+
+// Establece fila activa y traslada valores al formulario
+function select_and_update(e) {
+  // Ensure the clicked element is a row
+  if (e.target.tagName.toLowerCase() === 'td') {
+    const rowElement = e.target.parentElement;
+    // Elimina atributo active de la fila activa actual
+    document.querySelector("#locales > tbody > tr.active")?.classList.remove("active");
+    // Marca como activa la fila seleccionada
+    rowElement?.classList.add("active");
     // Traslada valores de la fila seleccionada al formulario
-    _.map(row2data($(e.target.data)), function (value, key) {
-      $("#" + key).val(value);
+    const tr_data = row2data(rowElement);
+    Object.entries(tr_data).forEach(([key, value]) => {
+      const inputElement = document.getElementById(key);
+      if (inputElement) {
+        inputElement.value = value;
+      }
     });
     update();
   }
-);
+}
+
+// Añade una fila y actualiza interfaz
+function add_and_update(e) {
+  const last_row = document.querySelector("#locales > tbody tr:last-child");
+  last_row.parentNode.insertBefore(fields2row(), last_row.nextSibling);
+  last_row.nextSibling.dispatchEvent(new Event("click"));
+  update();
+}
+
+// Elimina una fila y actualiza interfaz
+function remove_and_update(e) {
+  const active_row = document.querySelector("#locales > tbody > tr.active");
+  const next_row = active_row.nextElementSibling;
+  const target_row = next_row || active_row.previousElementSibling;
+  active_row.remove();
+  if (target_row) {
+    target_row.dispatchEvent(new Event("click"));
+  }
+  update();
+}
+
+// Modifica datos de fila y actualiza interfaz
+function modify_and_update(e) {
+  const new_row = fields2row();
+  new_row.classList.add("active");
+  document.querySelector("#locales > tbody tr.active").replaceWith(new_row);
+  new_row.dispatchEvent(new Event("click"));
+  update();
+}
+
+// Limpia filas y deja una en blanco y actualiza interfaz
+function clear_and_update(e) {
+  document.querySelectorAll("#locales > tbody tr").forEach(row => row.remove());
+  reset_form_fields();
+  const new_row = fields2row();
+  new_row.classList.add("active");
+  document.querySelector("#locales > tbody").append(new_row);
+  new_row.dispatchEvent(new Event("click"));
+  update();
+}
+
+// Conecta retrollamadas a eventos -----------------------------
+
+// Seleccionar fila al pulsar
+document.querySelector("#locales > tbody").addEventListener("click", select_and_update);
 
 // Añadir fila y seleccionarla
-document.querySelector("button#add").addEventListener("click", (e) => {
-  const last_row = document.querySelector("#locales > tbody tr:last-child");
-  last_row.after(fields2row()).next().dispatchEvent(new Event("click"));
-});
+document.querySelector("button#add").addEventListener("click", add_and_update);
 
 // Eliminar fila y seleccionar otra
-$("button#remove").click(function (e) {
-  const activerow = document.querySelector("#locales > tbody > tr.active");
-  const nextrow = activerow.next();
-  const targetrow = nextrow.length ? nextrow : activerow.prev();
-  activerow.remove();
-  targetrow.dispatchEvent(new Event("click"));
-});
+document.querySelector("button#remove").addEventListener("click", remove_and_update);
 
 // Modificar fila
-document.querySelector("button#modify").addEventListener("click", (e) => {
-  const newrow = $(fields2row()).addClass("active");
-  document.querySelector("#locales > tbody tr.active").replaceWith(newrow);
-  newrow.dispatchEvent(new Event("click"));
-});
+document.querySelector("button#modify").addEventListener("click", modify_and_update);
 
 // Eliminar todas las filas y dejar una en blanco
-document.querySelector("button#clean").addEventListener("click", (e) => {
-  document.querySelector("#locales > tbody tr").remove();
-  resetform_fields();
-  const newrow = $(fields2row());
-  document.querySelector("#locales > tbody").append(newrow);
-  newrow.dispatchEvent(new Event("click"));
-});
+document.querySelector("button#clean").addEventListener("click", clear_and_update);
 
-// Seleccionar fila activa
-document
-  .querySelector("#locales > tbody > tr.active")
-  .dispatchEvent(new Event("click"));
+// Seleccionar fila activa y actualizar interfaz
+document.querySelector("#locales > tbody > tr.active").dispatchEvent(new Event("click"));
+update();
