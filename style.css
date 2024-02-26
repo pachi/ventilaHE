@@ -1,0 +1,95 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: left;
+}
+
+.units {
+  font-weight: normal;
+}
+
+table#locales > tbody > tr:nth-child(2n + 1) {
+  background-color: #e4e4e4;
+}
+table#locales > tbody > tr.active > td {
+  background-color: #67baef;
+}
+table#locales > tbody > tr:hover {
+  background-color: #b7caff;
+  cursor: pointer;
+}
+
+table#locales th {
+  display: inline-cell;
+  vertical-align: top;
+}
+table#locales td.m2::after {
+  content: " m²";
+}
+table#locales td.m::after {
+  content: " m";
+}
+
+table#locales tfoot {
+  background-color: lightblue;
+  font-weight: bold;
+  color: navy;
+}
+
+#vol2009,
+#renh2009,
+#vol2017,
+#renh2017 {
+  text-align: right;
+  font-weight: bold;
+}
+
+table#results thead {
+  background-color: #3c763d;
+  color: white;
+}
+table#results tbody {
+  background-color: white;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}

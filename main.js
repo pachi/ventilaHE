@@ -1,17 +1,19 @@
-/*
- * Ventilación HE
- *
- * Cálculo de la ventilación global de edificios de vivienda
- * para la modelización energética
- *
- * http://www.codigotecnico.org
- *
- * Copyright (c) 2015 - 2024 Rafael Villar Burke, Daniel Jiménez González, Marta Sorribes Gil
- *
- * Licensed under the MIT license:
- *   http://www.opensource.org/licenses/mit-license.php
- *
- */
+//
+// Ventilación HE
+//
+// Cálculo de la ventilación global de edificios de vivienda
+// para la modelización energética
+//
+// http://www.codigotecnico.org
+//
+// Copyright (c) 2015 - 2024 Rafael Villar Burke, Daniel Jiménez González, Marta Sorribes Gil
+//
+// Licensed under the MIT license:
+//   http://www.opensource.org/licenses/mit-license.php
+//
+//
+
+import './style.css'
 
 // Funciones auxiliares -------------------------------------------------------
 
