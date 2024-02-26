@@ -10,7 +10,7 @@ table#locales td.m::after {content:" m";}
 
 table#locales tfoot {background-color:lightblue;font-weight:bold;color:navy;}
 
-#vol2009, #renh2009, #vol2015, #renh2015 {text-align:right;font-weight:bold}
+#vol2009, #renh2009, #vol2017, #renh2017 {text-align:right;font-weight:bold}
 
 table#results thead {background-color:#3c763d;color:white}
 table#results tbody {background-color:white}

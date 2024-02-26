@@ -6,7 +6,7 @@
  *
  * http://www.codigotecnico.org
  *
- * Copyright (c) 2015 - Rafael Villar Burke, Daniel Jiménez González
+ * Copyright (c) 2015 - 2024 Rafael Villar Burke, Daniel Jiménez González, Marta Sorribes Gil
  *
  * Licensed under the MIT license:
  *   http://www.opensource.org/licenses/mit-license.php
@@ -119,7 +119,7 @@ export function update() {
   const supcomunes = supcomun_lst.reduce((acc, val) => acc+val, 0);
   const totsup = suptipos + supcomunes
   const vol2009 = ventila2009(data);
-  const vol2015 = ventila2015(data);
+  const vol2017 = ventila2017(data);
   
   const values = {
     voledif,
@@ -134,8 +134,8 @@ export function update() {
     totsupcocina: Math.round(dot(numtipos_lst, data.map((i) => i.supcocina)) * 100) / 10,
     vol2009: Math.round(vol2009),
     renh2009: voledif ? Math.round(100 * (3.6 * vol2009) / voledif) / 100: "-",
-    vol2015: Math.round(vol2015),
-    renh2015: voledif ? Math.round(100 * (3.6 * vol2015) / voledif) / 100: "-",
+    vol2017: Math.round(vol2017),
+    renh2017: voledif ? Math.round(100 * (3.6 * vol2017) / voledif) / 100: "-",
   }
 
   updateElements(values);
@@ -157,8 +157,8 @@ function ventila2009(data) {
 }
 
 // Calcula suma de caudales para HS3 revisado, l/s
-function ventila2015(data) {
-  function procesa_tipo_2015(row) {
+function ventila2017(data) {
+  function procesa_tipo_2017(row) {
     const vol1 =
       8 +
       4 * Math.max(row.numdormitorios - 1, 0) +
@@ -169,7 +169,7 @@ function ventila2015(data) {
     const vol_min_extr_loc = Math.max(vol1, vol_min_extr);
     return row.numtipo * (vol_min_extr_loc + 0.35 * row.supcomun);
   }
-  return data.map(procesa_tipo_2015).reduce((acc, val)=> acc + val, 0); // l/s
+  return data.map(procesa_tipo_2017).reduce((acc, val)=> acc + val, 0); // l/s
 }
 
 // Eventos de la interfaz -------------------------------------------------------
